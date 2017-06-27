@@ -1,0 +1,4 @@
+*.db
+cool_db
+.idea/
+__pycache__/

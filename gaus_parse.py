@@ -1,13 +1,6 @@
 import os
 import re
 
-FOLDER = os.path.join(os.path.expanduser('~'),
-                      'Dropbox (BrightSpec)',
-                      'BrightSpec_Data',
-                      'G09_mmwlibrary',
-                      'Outputs-Passed')
-
-
 def file_list(folder):
     return os.listdir(folder)
 
@@ -19,25 +12,30 @@ def open_file(filepath):
 
     return data
 
-
-
-
-
-if __name__ == '__main__':
-
-    file = file_list(FOLDER)[0]
-    data = open_file(os.path.join(FOLDER, file))
-    #print(data)
-    #data = 'abd fdfs fsafs\n sasdf sddfdf .. sdf sdf'
-
-    #x = re.compile(r'fsafs(.*)sdf', re.DOTALL)
-    if 'rincipal axis orientation:' in data:
-        print(True)
-    if 'Rotational constants' in data:
-        print(True)
-    x = re.compile(r'Principal axis orientation(.*?)Rotational constants', re.DOTALL)
+def parse_coords(data):
+    x = re.compile(r'Principal axis orientation: (.*?)Rotational constants', re.DOTALL)
 
     result = x.search(data)
+    lines = result.group(1).splitlines()[5:-2]
+    for line in lines:
+        yield line
 
-    print('RESULT', result.group())
+def parse_constants(data):
+    'Nuclear quadrupole coupling constants'
+
+    x = re.compile(r'Principal axis orientation: (.*?)Nuclear quadrupole coupling constants', re.DOTALL)
+    result = x.search(data)
+    abc = result.group(1).splitlines()[-2]
+
+    dp_search = re.compile(r'Principal axis orientation: (.*?)Atoms with significant hyperfine tensors', re.DOTALL)
+    result = dp_search.search(data)
+    dipole = result.group(1).splitlines()[-3]
+    return {
+        'abc': abc,
+        'quad': None,
+        'dipole': dipole
+    }
+
+
+
 
