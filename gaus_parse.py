@@ -28,12 +28,16 @@ if __name__ == '__main__':
     file = file_list(FOLDER)[0]
     data = open_file(os.path.join(FOLDER, file))
     #print(data)
-    data = 'abd fdfs fsafs sasdf sddfdf .. sdf sdf'
+    #data = 'abd fdfs fsafs\n sasdf sddfdf .. sdf sdf'
 
-    x = re.compile(r'fsafs(.*)sdf')
+    #x = re.compile(r'fsafs(.*)sdf', re.DOTALL)
+    if 'rincipal axis orientation:' in data:
+        print(True)
+    if 'Rotational constants' in data:
+        print(True)
+    x = re.compile(r'Principal axis orientation(.*?)Rotational constants', re.DOTALL)
 
-    #x = re.compile(r'(?<=Principal axis orientation:).*?(?=Rotational constants (MHZ):)')
     result = x.search(data)
 
-    print('RESULT', result.group(1))
+    print('RESULT', result.group())
 
