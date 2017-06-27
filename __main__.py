@@ -17,7 +17,7 @@ FOLDER = os.path.join(r'D:\Dropbox (BrightSpec)\BrightSpec_Data\G09_mmwlibrary\O
 
 def create_db():
     with open_temporary_session('cool_db') as session:
-        for i, file in enumerate(file_list(FOLDER)):
+        for i, file in enumerate(file_list(FOLDER)[:100]):
 
             try:
                 x = Molecule.from_file(os.path.join(FOLDER, file))
@@ -33,5 +33,8 @@ if __name__ == '__main__':
 
     with open_temporary_session('cool_db') as session:
         x = session.query(Molecule)
-        print(x.all()[0].atoms)
+
+        atoms = x.all()[0].atoms
+        for atom in atoms:
+            print(atom.x)
 

@@ -39,6 +39,7 @@ class Molecule(Base):
     mass = Column(Integer)
     chemspyder_id = Column(Integer)
     constants = relationship('Constants', backref='molecule')
+    constants_id = Column(Integer, ForeignKey('constants.id'))
 
     @classmethod
     def from_file(cls, filepath):
@@ -50,7 +51,7 @@ class Molecule(Base):
             instance.name = '_'.join(instance.name)
 
         data = open_file(filepath)
-        instance.constants = [Constants.from_string(**parse_constants(data))]
+        instance.constants = Constants.from_string(**parse_constants(data))
         instance.atoms = [Atom(gauss_data=line) for line in parse_coords(data)]
         return instance
 
@@ -68,7 +69,6 @@ class Constants(Base):
     uB = Column(Float)
     uC = Column(Float)
     uTotal = Column(Float)
-    molecule_id = Column(Integer, ForeignKey('molecule.id'))
 
     @classmethod
     def from_string(cls, abc, quad, dipole):
@@ -87,24 +87,29 @@ class Constants(Base):
         return 'Constants({},{},{})'.format(self.A, self.B, self.C)
 
 class Coords(Base):
-    atom_id = Column(Integer, ForeignKey('atom.id'))
     x = Column(Integer)
     y = Column(Integer)
     z = Column(Integer)
 
+    def __init__(self, *, x=0, y=0, z=0):
+        self.x = x
+        self.y = y
+        self.z = z
+
 class Atom(Base):
-    coords = relationship('Coords', backref='atom')
+    coords = relationship('Coords', backref=backref('atom', uselist=False))
+    coords_id = Column(Integer, ForeignKey('coords.id'))
     _number = Column(Integer)
     atomic_num = Column(Integer)
     molecule_id = Column(Integer, ForeignKey('molecule.id'))
 
     def __init__(self, *, gauss_data=None):
-
         split_data = gauss_data.split()
+
         if gauss_data is not None:
-            self.x = float(split_data[2])
-            self.y = float(split_data[3])
-            self.z = float(split_data[4])
+            self.coords = Coords(x=split_data[2],
+                                 y=split_data[3],
+                                 z=split_data[4])
             self.atomic_num = int(split_data[1])
             self._number = int(split_data[0])
 
